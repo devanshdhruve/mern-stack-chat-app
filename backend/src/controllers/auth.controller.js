@@ -34,58 +34,61 @@ const signup = async (req, res) => {
     if (newUser) {
       generateToken(newUser._id, res);
       await newUser.save();
-    }
 
-    return res.status(201).json({
-      _id: newUser._id,
-      fullName: newUser.fullName,
-      email: newUser.email,
-      profilePic: newUser.profilePic,
-    });
-  } catch (error) {}
+      res.status(201).json({
+        _id: newUser._id,
+        fullName: newUser.fullName,
+        email: newUser.email,
+        profilePic: newUser.profilePic,
+      });
+    } else {
+      return res.status(400).json({ message: "User registeration failed." });
+    }
+  } catch (error) {
+    console.log("Error in Signing up", error.message);
+    return res.status(500).json({ message: "Internal server error occurred" });
+  }
 };
 
 const login = async (req, res) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
-
   try {
-    const user = await User.findById({ email });
+    if (!email || !password) {
+      res.status(400).json({ message: "All fields are required" });
+    }
+
+    const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      res.status(400).json({ message: "User does not exists" });
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
-
     if (!isPasswordCorrect) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      res.status(400).json({ message: "Invalid credentials" });
     }
 
     generateToken(user._id, res);
 
-    return res.status(200).json({
-      _id: user._id,
+    res.status(200).json({
+      id: user._id,
       fullName: user.fullName,
       email: user.email,
       profilePic: user.profilePic,
     });
   } catch (error) {
     console.log("Some error occurred", error.message);
-    return res.status(500).json({ message: "Some error occurred" });
+    return res.status(500).json({ message: "Internal Error Occurred" });
   }
 };
 
 const logout = async (req, res) => {
   try {
-    res.cookie(jwt, "", { maxAge: 0 });
+    res.cookie("jwt", "", { maxAge: 0 });
     return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.log("Some error occurred", error.message);
-    return res.status(500).json({ message: "Some error occurred" });
+    return res.status(500).json({ message: "Internal Error occurred" });
   }
 };
 
