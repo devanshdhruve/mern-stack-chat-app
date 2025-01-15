@@ -1,29 +1,29 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 
-const userSchema = new Schema(
+const userSchema = new mongoose.Schema(
   {
-    fullName: {
-      type: String,
-      reqired: true,
-    },
     email: {
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
-      index: true,
-      trim: true,
+    },
+    fullName: {
+      type: String,
+      required: true,
     },
     password: {
       type: String,
-      required: [true, "password is required"],
-      minlength: [6, "password must be at least 6 characters long"],
+      required: true,
+      minlength: 6,
     },
     profilePic: {
       type: String,
+      default: "",
     },
   },
   { timestamps: true }
 );
 
-export const User = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+
+export default User;
